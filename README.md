@@ -67,6 +67,12 @@ docker run --name debt-solver-postgres -e POSTGRES_PASSWORD=yourpassword -d -p 5
 
 <code>go mod tidy</code>
 
+## SMTP Testing
+
+<p>Mailtrap.io Server Will be used for testing purpose</p>
+
+<code>{{d.backend.developer.personal.email.will.receive.all.code}}</code>
+
 ## Run Database Migrations
 
 Setup the database schema using the migration file

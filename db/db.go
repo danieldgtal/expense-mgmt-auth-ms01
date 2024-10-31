@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -38,7 +39,6 @@ func ConnectDatabase() error {
 	return nil // Return nil error if successful
 }
 
-
 // ExecuteSQLSchema reads a SQL file and executes its content
 func ExecuteSQLSchema(filePath string) error {
 	// Open a raw database connection using sql.DB
@@ -54,11 +54,39 @@ func ExecuteSQLSchema(filePath string) error {
 	}
 	sqlStatements := string(sqlBytes)
 
-	// Execute SQL statements
-	_, err = sqlDB.Exec(sqlStatements)
+	// Split SQL statements by semicolon
+	statements := strings.Split(sqlStatements, ";")
+
+	// Begin transaction
+	tx, err := sqlDB.Begin()
 	if err != nil {
-		return fmt.Errorf("failed to execute SQL file: %v", err)
+		return fmt.Errorf("failed to begin transaction: %v", err)
+	}
+	defer tx.Rollback() // Ensure rollback if not committed
+
+	// Execute each statement
+	for _, stmt := range statements {
+		stmt = strings.TrimSpace(stmt) // Clean up whitespace
+		if stmt == "" {
+			continue // Skip empty statements
+		}
+
+		_, err := tx.Exec(stmt)
+		if err != nil {
+			return fmt.Errorf("failed to execute SQL statement: %v - Error: %v", stmt, err)
+		}
+		log.Printf("Executed SQL statement: %s\n", stmt)
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %v", err)
 	}
 
 	return nil
+}
+
+// GetDBInstance returns the DB instance
+func GetDBInstance() *gorm.DB {
+	return DB
 }
