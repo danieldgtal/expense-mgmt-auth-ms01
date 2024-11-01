@@ -189,30 +189,39 @@ func Logout(context *gin.Context) {
 	utils.SendResponse(context, http.StatusOK, "User logged out successfully", nil, nil)
 }
 
-// GetUserInfo retrieves the user's complete information
+// GetUserInfo retrieves and returns user information
 func GetUserInfo(c *gin.Context) {
 	// Get the DB instance
 	DB := db.GetDBInstance()
 
-	// Get the user ID from the JWT token in the middleware
-	userID := c.MustGet("user_id").(string)
-
-	// Find the user in the database
-	var user models.User
-	if err := DB.Where("user_id = ?", userID).First(&user).Error; err != nil {
-			utils.SendResponse(c, http.StatusNotFound, "User not found", nil, nil)
-			return
+	// Retrieve user ID from the context (set by middleware)
+	userID, exists := c.Get("userId")
+	if !exists {
+		utils.SendResponse(c, http.StatusUnauthorized, "User not authorized", nil, nil)
+		return
 	}
 
-	// Send response with user information
-	utils.SendResponse(c, http.StatusOK, "User information retrieved successfully", gin.H{
-			"user_id":           user.UserID,
-			"first_name":        user.FirstName,
-			"last_name":         user.LastName,
-			"email":             user.Email,
-			// Include other relevant fields
-	}, nil)
+	// Define a user model to store retrieved data
+	var user models.User
+
+	// Query the database for the user's information by ID
+	if err := DB.Where("user_id = ?", userID).First(&user).Error; err != nil {
+		utils.SendResponse(c, http.StatusNotFound, "User not found", nil, nil)
+		return
+	}
+
+	// Create a response object with only the necessary fields
+	userResponse := gin.H{
+		"first_name": user.FirstName,
+		"last_name":  user.LastName,
+		"email":      user.Email,
+		"created_at": user.CreatedAt,
+	}
+
+	// Send the response
+	utils.SendResponse(c, http.StatusOK, "User information retrieved successfully", userResponse, nil)
 }
+
 
 // UpdatePassword handles the password change request
 func UpdatePassword(c *gin.Context) {
@@ -227,7 +236,7 @@ func UpdatePassword(c *gin.Context) {
 	}
 
 	// Get the user ID from the JWT token in the middleware (assumed to be set)
-	userID := c.MustGet("user_id").(string)
+	userID := c.MustGet("userId")
 
 	// Find the user in the database
 	var user models.User
@@ -260,10 +269,12 @@ func UpdatePassword(c *gin.Context) {
 	utils.SendResponse(c, http.StatusOK, "Password updated successfully", nil, nil)
 }
 
+
 // UpdateUserInfo handles the user info update request
 func UpdateUserInfo(c *gin.Context) {
 	// Get the DB instance
 	DB := db.GetDBInstance()
+
 	var updateUser models.UpdateUser
 	// Bind JSON to the request struct
 	if err := c.ShouldBindJSON(&updateUser); err != nil {
@@ -272,7 +283,7 @@ func UpdateUserInfo(c *gin.Context) {
 	}
 
 	// Get the user ID from the JWT token in the middleware (assumed to be set)
-	userID := c.MustGet("user_id").(string)
+	userID := c.MustGet("userId")
 
 	// Find the user in the database
 	var user models.User

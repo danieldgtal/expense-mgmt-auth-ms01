@@ -119,3 +119,4 @@ func VerifyToken(tokenString string) (uuid.UUID, error) {
 	// Convert user ID to UUID
 	return uuid.Parse(userId)
 }
+

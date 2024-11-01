@@ -53,6 +53,16 @@ func StoreResetToken(userID uuid.UUID, tokenString string, expirationTime time.T
 	return nil // Return nil if the operation was successful
 }
 
+// Checks if token is valid and in database
+func IsTokenActive(token string) bool {
+	// Get the DB instance
+	db := db.GetDBInstance()
+
+	err := db.Where("token = ?", token).First(&models.AuthToken{}).Error
+	return err == nil
+}
+
+
 
 // DeleteToken removes the specified token from the database
 func DeleteToken(tokenString string) error {
