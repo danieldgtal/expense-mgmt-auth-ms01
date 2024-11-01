@@ -34,6 +34,8 @@ auth-service/
 │   └── migrate.go                   # Database migrations
 │
 ├── internal/
+|   |── common/
+│   │   └── common.go                # common utility codes for dynamic use
 │   ├── controller/
 │   │   └── auth_controller.go       # Controller for authentication handlers
 │   ├── middleware/
@@ -60,7 +62,7 @@ cd debt-solver-auth
 ## Setup PostgreSQL
 
 <code>
-docker run --name debt-solver-postgres -e POSTGRES_PASSWORD=yourpassword -d -p 5432:5432 postgres
+  docker run --name debt-solver-postgres -e POSTGRES_PASSWORD=yourpassword -d -p 5432:5432 postgres
 </code>
 
 ## Install Dependencies
@@ -103,9 +105,11 @@ POST /verify-email
 
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=auth_user
-DB_PASSWORD=yourpassword
-JWT_SECRET={{SuperSecret}}
+DB_USER=postgres
+DB_PASSWORD=root
+
+JWT_SECRET=DebtSolver
+JWT_EXPIRATION_HOURS=24
 
 ## License
 
