@@ -1,12 +1,13 @@
 package controller
 
 import (
-	"auth-service/db"
-	"auth-service/internal/common"
-	"auth-service/internal/models"
-	"auth-service/utils"
 	"net/http"
 	"time"
+
+	"github.com/Debt-Solvers/BE-auth-service/db"
+	"github.com/Debt-Solvers/BE-auth-service/internal/common"
+	"github.com/Debt-Solvers/BE-auth-service/internal/models"
+	"github.com/Debt-Solvers/BE-auth-service/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

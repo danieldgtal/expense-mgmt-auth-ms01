@@ -1,9 +1,10 @@
 package common
 
 import (
-	"auth-service/db"
-	"auth-service/internal/models"
 	"time"
+
+	"github.com/Debt-Solvers/BE-auth-service/db"
+	"github.com/Debt-Solvers/BE-auth-service/internal/models"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"

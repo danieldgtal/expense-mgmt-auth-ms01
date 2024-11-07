@@ -1,4 +1,4 @@
-module auth-service
+module github.com/Debt-Solvers/BE-auth-service
 
 go 1.23.2
 

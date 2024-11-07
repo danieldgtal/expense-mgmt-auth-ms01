@@ -1,12 +1,13 @@
 package models
 
 import (
-	"auth-service/db"
-	"auth-service/utils"
 	"errors"
 	"fmt"
 	"strings"
 	"time"
+
+	"github.com/Debt-Solvers/BE-auth-service/db"
+	"github.com/Debt-Solvers/BE-auth-service/utils"
 
 	"github.com/google/uuid"
 )

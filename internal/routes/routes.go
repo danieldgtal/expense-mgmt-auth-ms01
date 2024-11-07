@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"auth-service/internal/controller"
-	"auth-service/internal/middleware"
+	"github.com/Debt-Solvers/BE-auth-service/internal/controller"
+	"github.com/Debt-Solvers/BE-auth-service/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )

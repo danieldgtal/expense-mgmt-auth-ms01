@@ -1,11 +1,12 @@
 package main
 
 import (
-	"auth-service/db"
-	"auth-service/internal/middleware"
-	"auth-service/internal/routes"
 	"log"
 	"os"
+
+	"github.com/Debt-Solvers/BE-auth-service/db"
+	"github.com/Debt-Solvers/BE-auth-service/internal/middleware"
+	"github.com/Debt-Solvers/BE-auth-service/internal/routes"
 
 	"github.com/gin-gonic/gin"
 )

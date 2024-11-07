@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"auth-service/internal/common"
-	"auth-service/utils"
+	"github.com/Debt-Solvers/BE-auth-service/internal/common"
+	"github.com/Debt-Solvers/BE-auth-service/utils"
 	"net/http"
 	"strings"
 

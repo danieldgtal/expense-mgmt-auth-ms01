@@ -1,11 +1,12 @@
 package db
 
 import (
-	"auth-service/configs"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/Debt-Solvers/BE-auth-service/configs"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
