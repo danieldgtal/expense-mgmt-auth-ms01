@@ -34,23 +34,28 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
 --     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 -- );
 
--- Create CATEGORY table
+-- Modified schema: Keeping only `id` as the primary key
 CREATE TABLE IF NOT EXISTS categories (
-  category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES "users"(user_id) ON DELETE CASCADE, -- Allow null for default categories
   name VARCHAR(50) NOT NULL,
   description TEXT,
   color_code VARCHAR(7),
+  is_default BOOLEAN DEFAULT FALSE, -- Indicates if the category is a default category
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Add a case-insensitive unique index for name and user_id if it doesn’t exist
+DROP INDEX IF EXISTS unique_category_name_user;
+CREATE UNIQUE INDEX IF NOT EXISTS unique_category_name_user ON categories (user_id, LOWER(name));
+
 -- Create BUDGET table
 CREATE TABLE IF NOT EXISTS budgets (
   budget_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(category_id) ON DELETE SET NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   amount DECIMAL(10, 2) CHECK (amount >= 0) NOT NULL,
   start_date DATE NOT NULL,
   end_date DATE NOT NULL,
@@ -74,13 +79,12 @@ CREATE TABLE IF NOT EXISTS receipts (
 CREATE TABLE IF NOT EXISTS expenses (
   expense_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
-  category_id UUID REFERENCES categories(category_id) ON DELETE SET NULL,
+  category_id UUID REFERENCES categories(id) ON DELETE SET NULL,
   amount DECIMAL(10, 2) CHECK (amount >= 0) NOT NULL,
   date TIMESTAMP WITH TIME ZONE NOT NULL,
   description TEXT,
   receipt_id UUID REFERENCES receipts(receipt_id) ON DELETE SET NULL,
-  is_recurring BOOLEAN DEFAULT FALSE,
-  recurring_interval_days INT CHECK (recurring_interval_days >= 0),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE
 );
@@ -116,7 +120,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
   FOREIGN KEY (user_id) REFERENCES "users"(user_id) ON DELETE SET NULL
 );
 
--- Create indexes for frequently queried fields
+-- Create indexes for frequently queried fields if they don’t exist
 CREATE INDEX IF NOT EXISTS idx_expense_user_id ON expenses(user_id);
 CREATE INDEX IF NOT EXISTS idx_expense_date ON expenses(date);
 CREATE INDEX IF NOT EXISTS idx_budget_user_id ON budgets(user_id);
