@@ -34,10 +34,20 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
 --     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 -- );
 
--- Create CATEGORY table
+-- -- Create CATEGORY table
+-- CREATE TABLE IF NOT EXISTS categories (
+--   category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
+--   name VARCHAR(50) NOT NULL,
+--   description TEXT,
+--   color_code VARCHAR(7),
+--   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--   deleted_at TIMESTAMP WITH TIME ZONE
+-- );
 CREATE TABLE IF NOT EXISTS categories (
   category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
+  user_id UUID REFERENCES "users"(user_id) ON DELETE CASCADE,  -- Allow null for default categories
   name VARCHAR(50) NOT NULL,
   description TEXT,
   color_code VARCHAR(7),
@@ -45,6 +55,7 @@ CREATE TABLE IF NOT EXISTS categories (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP WITH TIME ZONE
 );
+
 
 -- Create BUDGET table
 CREATE TABLE IF NOT EXISTS budgets (
