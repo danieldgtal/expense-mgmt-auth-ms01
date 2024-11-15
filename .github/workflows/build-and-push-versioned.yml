@@ -26,6 +26,7 @@ jobs:
       - name: Define Image Date Tag
         id: vars
         run: |
+          export TZ=America/Toronto
           DATE_TAG=$(date +'%Y%m%d-%H%M')
           IMAGE_NAME="billzhaohongwei/caa900debtsolverproject-auth-service"
           echo "DATE_TAG=${DATE_TAG}" >> $GITHUB_ENV
