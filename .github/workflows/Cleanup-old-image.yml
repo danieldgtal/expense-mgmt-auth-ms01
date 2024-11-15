@@ -56,13 +56,18 @@ jobs:
       - name: Determine Tags to Delete
         id: tags_to_delete
         run: |
+          # Count total tags
           TOTAL_TAGS=$(wc -l < tags.txt)
+          echo "Total Tags: $TOTAL_TAGS"
+      
+          # Retain only the latest 3 tags
           if [ "$TOTAL_TAGS" -le 3 ]; then
             echo "No tags to delete. Only $TOTAL_TAGS tags exist."
             exit 0
           fi
-
-          TAGS_TO_DELETE=$(head -n -3 tags.txt)
+      
+          # Get tags to delete (all but the last 3)
+          TAGS_TO_DELETE=$(head -n -3 tags.txt | tr '\n' ' ')
           echo "Tags to delete: $TAGS_TO_DELETE"
           echo "TAGS_TO_DELETE=$TAGS_TO_DELETE" >> $GITHUB_ENV
 
