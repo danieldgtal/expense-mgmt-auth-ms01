@@ -1,15 +1,13 @@
 name: Cleanup Old Docker Images
 
 on:
-  workflow_dispatch: # Allows manual triggering
+  workflow_dispatch:
 
 jobs:
   cleanup:
-    name: Docker Hub Login and Cleanup
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Log in to Docker Hub
       - name: Log in to Docker Hub and Retrieve Token
         run: |
           RESPONSE=$(curl -s -X POST \
@@ -26,11 +24,9 @@ jobs:
           
           echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # Step 2: Debug the token
       - name: Debug Docker Hub Token
         run: echo "Docker Hub Token: ${{ env.TOKEN }}"
 
-      # Step 3: List all image tags
       - name: List All Image Tags
         run: |
           RESPONSE=$(curl -s -H "Authorization: JWT ${{ env.TOKEN }}" \
