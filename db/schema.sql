@@ -34,27 +34,10 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
 --     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 -- );
 
-<<<<<<< HEAD
 -- Modified schema: Keeping only `id` as the primary key
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID REFERENCES "users"(user_id) ON DELETE CASCADE, -- Allow null for default categories
-=======
--- -- Create CATEGORY table
--- CREATE TABLE IF NOT EXISTS categories (
---   category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---   user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
---   name VARCHAR(50) NOT NULL,
---   description TEXT,
---   color_code VARCHAR(7),
---   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---   deleted_at TIMESTAMP WITH TIME ZONE
--- );
-CREATE TABLE IF NOT EXISTS categories (
-  category_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID REFERENCES "users"(user_id) ON DELETE CASCADE,  -- Allow null for default categories
->>>>>>> e1520c991e16f21f1ae8791de262790a418cbca4
   name VARCHAR(50) NOT NULL,
   description TEXT,
   color_code VARCHAR(7),
@@ -64,12 +47,9 @@ CREATE TABLE IF NOT EXISTS categories (
   deleted_at TIMESTAMP WITH TIME ZONE
 );
 
-<<<<<<< HEAD
 -- Add a case-insensitive unique index for name and user_id if it doesn’t exist
 DROP INDEX IF EXISTS unique_category_name_user;
 CREATE UNIQUE INDEX IF NOT EXISTS unique_category_name_user ON categories (user_id, LOWER(name));
-=======
->>>>>>> e1520c991e16f21f1ae8791de262790a418cbca4
 
 -- Create BUDGET table
 CREATE TABLE IF NOT EXISTS budgets (
@@ -92,7 +72,10 @@ CREATE TABLE IF NOT EXISTS receipts (
   scanned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP WITH TIME ZONE
+  deleted_at TIMESTAMP WITH TIME ZONE,
+  vendor_name VARCHAR(100),     -- Optional metadata
+  total_amount DECIMAL(10, 2),  -- Optional metadata
+  transaction_date DATE         -- Optional metadata for OCR extraction date
 );
 
 -- Create EXPENSE table
@@ -146,3 +129,6 @@ CREATE INDEX IF NOT EXISTS idx_expense_date ON expenses(date);
 CREATE INDEX IF NOT EXISTS idx_budget_user_id ON budgets(user_id);
 CREATE INDEX IF NOT EXISTS idx_category_user_id ON categories(user_id);
 CREATE INDEX IF NOT EXISTS idx_notification_user_id ON notifications(user_id);
+CREATE INDEX idx_receipts_scanned_date ON receipts (scanned_date);
+CREATE INDEX idx_expenses_receipt_id ON expenses (receipt_id);
+
