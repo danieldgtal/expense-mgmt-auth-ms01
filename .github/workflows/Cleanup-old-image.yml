@@ -36,15 +36,21 @@ jobs:
         run: |
           RESPONSE=$(curl -s -H "Authorization: JWT ${{ env.TOKEN }}" \
             "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100")
-          
+      
           echo "Tags API Response: $RESPONSE"
+      
+          # Extract tag names and sort by last_updated
           TAGS=$(echo "$RESPONSE" | jq -r '.results | sort_by(.last_updated) | .[].name')
+      
+          # Check if TAGS is empty
           if [ -z "$TAGS" ]; then
             echo "No tags found or error retrieving tags."
             exit 1
           fi
-          echo "$TAGS" > tags.txt
-          echo "TAGS=$TAGS" >> $GITHUB_ENV
+      
+          # Write tags to a file
+          echo "$TAGS" | tr ' ' '\n' > tags.txt
+          echo "Processed Tags: $(cat tags.txt)"
 
       # Step 4: Retain the latest 3 tags
       - name: Determine Tags to Delete
