@@ -1,71 +1,47 @@
-name: Cleanup Old Docker Images
+name: Docker Hub Login and Tag Cleanup
 
 on:
-  workflow_dispatch: # Allows manual triggering of the workflow
-  schedule:
-    - cron: '0 0 * * *' # Runs daily at midnight UTC
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   cleanup:
-    name: Clean Up Docker Images
+    name: Docker Hub Login and Cleanup
     runs-on: ubuntu-latest
 
     steps:
       # Step 1: Log in to Docker Hub
-      - name: Log in to Docker Hub
+      - name: Log in to Docker Hub and Retrieve Token
         run: |
           RESPONSE=$(curl -s -X POST \
             -H "Content-Type: application/json" \
             -d '{"username": "'"${{ secrets.DOCKER_USERNAME }}"'", "password": "'"${{ secrets.DOCKER_PASSWORD }}"'"}' \
             "https://hub.docker.com/v2/users/login/")
+          
           TOKEN=$(echo "$RESPONSE" | jq -r '.token')
-          if [ "$TOKEN" == "null" ] || [ -z "$TOKEN" ]; then
+          
+          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
             echo "Error: Unable to retrieve Docker Hub token. Response: $RESPONSE"
             exit 1
           fi
+          
           echo "TOKEN=$TOKEN" >> $GITHUB_ENV
 
-      # Step 2: List all image tags
+      # Step 2: Debug the token
+      - name: Debug Docker Hub Token
+        run: echo "Docker Hub Token: ${{ env.TOKEN }}"
+
+      # Step 3: List all image tags
       - name: List All Image Tags
-        id: list_tags
         run: |
-          TOKEN=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} "https://hub.docker.com/v2/users/login/" | jq -r .token)
-          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
-            echo "Error: Unable to retrieve Docker Hub token."
-            exit 1
-          fi
-      
-          RESPONSE=$(curl -s -H "Authorization: JWT $TOKEN" \
-          "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100")
+          RESPONSE=$(curl -s -H "Authorization: JWT ${{ env.TOKEN }}" \
+            "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100")
+          
           echo "Tags API Response: $RESPONSE"
-      
+
           TAGS=$(echo "$RESPONSE" | jq -r '.results | sort_by(.last_updated) | .[].name')
           if [ -z "$TAGS" ]; then
             echo "No tags found or error retrieving tags."
             exit 1
           fi
-      
+
           echo "$TAGS" > tags.txt
-
-      # Step 3: Determine tags to delete (retain the latest 3)
-      - name: Find Tags to Delete
-        id: find_tags
-        run: |
-          TOTAL_TAGS=$(wc -l < tags.txt)
-          if [ "$TOTAL_TAGS" -gt 3 ]; then
-            TAGS_TO_DELETE=$(head -n -3 tags.txt)
-            echo "TAGS_TO_DELETE=$TAGS_TO_DELETE" >> $GITHUB_ENV
-          else
-            echo "No tags to delete." >> $GITHUB_ENV
-          fi
-
-      # Step 4: Delete older tags
-      - name: Delete Old Tags
-        if: env.TAGS_TO_DELETE != ''
-        run: |
-          TOKEN=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} "https://hub.docker.com/v2/users/login/" | jq -r .token)
-          for TAG in $TAGS_TO_DELETE; do
-            echo "Deleting tag: $TAG"
-            curl -s -X DELETE -H "Authorization: JWT $TOKEN" \
-            "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/$TAG/"
-          done
