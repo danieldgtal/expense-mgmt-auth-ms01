@@ -14,7 +14,10 @@ jobs:
       # Step 1: Log in to Docker Hub
       - name: Log in to Docker Hub
         run: |
-          RESPONSE=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} "https://hub.docker.com/v2/users/login/")
+          RESPONSE=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} \
+            -H "Content-Type: application/json" \
+            -H "Accept: application/json" \
+            "https://hub.docker.com/v2/users/login/")
           TOKEN=$(echo "$RESPONSE" | jq -r '.token')
           if [ "$TOKEN" == "null" ] || [ -z "$TOKEN" ]; then
             echo "Error: Unable to retrieve Docker Hub token. Response: $RESPONSE"
