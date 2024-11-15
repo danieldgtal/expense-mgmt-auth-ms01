@@ -28,8 +28,8 @@ jobs:
 
       # Step 2: Debug the token
       - name: Debug Docker Hub Token
-        run: echo "Docker Hub Token: ${{ env.TOKEN }}"
-
+        run: echo "Docker Hub Token:${{ env.TOKEN }}"
+        
       # Step 3: List all image tags
       - name: List All Image Tags
         run: |
