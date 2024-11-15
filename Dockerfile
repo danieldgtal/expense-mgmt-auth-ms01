@@ -31,6 +31,10 @@ WORKDIR /root/
 # Copy the Pre-built binary file from the previous stage
 COPY --from=builder /app/auth-service .
 
+# Copy the config and db folders into the container
+COPY --from=builder /app/config ./config
+COPY --from=builder /app/db ./db
+
 # Expose port 8080 (or whatever port your service uses)
 EXPOSE 8080
 
