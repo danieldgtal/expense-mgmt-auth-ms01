@@ -30,9 +30,22 @@ jobs:
         id: list_tags
         run: |
           TOKEN=$(curl -s -u ${{ secrets.DOCKER_USERNAME }}:${{ secrets.DOCKER_PASSWORD }} "https://hub.docker.com/v2/users/login/" | jq -r .token)
-          curl -s -H "Authorization: JWT $TOKEN" \
-          "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100" \
-          | jq -r '.results | sort_by(.last_updated) | .[].name' > tags.txt
+          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+            echo "Error: Unable to retrieve Docker Hub token."
+            exit 1
+          fi
+      
+          RESPONSE=$(curl -s -H "Authorization: JWT $TOKEN" \
+          "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100")
+          echo "Tags API Response: $RESPONSE"
+      
+          TAGS=$(echo "$RESPONSE" | jq -r '.results | sort_by(.last_updated) | .[].name')
+          if [ -z "$TAGS" ]; then
+            echo "No tags found or error retrieving tags."
+            exit 1
+          fi
+      
+          echo "$TAGS" > tags.txt
 
       # Step 3: Determine tags to delete (retain the latest 3)
       - name: Find Tags to Delete
