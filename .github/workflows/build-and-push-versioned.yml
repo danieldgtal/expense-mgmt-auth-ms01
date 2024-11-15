@@ -1,9 +1,10 @@
 name: "Build and Push Docker Image with version"
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch: # Allows manual triggering of the workflow
+#  push:
+#    branches:
+#      - main
 
 jobs:
   build_and_push:
