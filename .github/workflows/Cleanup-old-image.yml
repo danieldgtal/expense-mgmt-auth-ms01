@@ -1,4 +1,4 @@
-name: Docker Hub Login and Tag Cleanup
+name: Cleanup Old Docker Images
 
 on:
   workflow_dispatch: # Allows manual triggering
