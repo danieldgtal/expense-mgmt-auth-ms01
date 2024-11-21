@@ -129,6 +129,6 @@ CREATE INDEX IF NOT EXISTS idx_expense_date ON expenses(date);
 CREATE INDEX IF NOT EXISTS idx_budget_user_id ON budgets(user_id);
 CREATE INDEX IF NOT EXISTS idx_category_user_id ON categories(user_id);
 CREATE INDEX IF NOT EXISTS idx_notification_user_id ON notifications(user_id);
-CREATE INDEX idx_receipts_scanned_date ON receipts (scanned_date);
-CREATE INDEX idx_expenses_receipt_id ON expenses (receipt_id);
+CREATE INDEX IF NOT EXISTS idx_receipts_scanned_date ON receipts (scanned_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_receipt_id ON expenses (receipt_id);
 
