@@ -1,0 +1,82 @@
+name: Docker Hub Login and Tag Cleanup
+
+on:
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  cleanup:
+    name: Docker Hub Login and Cleanup
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Log in to Docker Hub
+      - name: Log in to Docker Hub and Retrieve Token
+        run: |
+          RESPONSE=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d '{"username": "'"${{ secrets.DOCKER_USERNAME }}"'", "password": "'"${{ secrets.DOCKER_PASSWORD }}"'"}' \
+            "https://hub.docker.com/v2/users/login/")
+          
+          TOKEN=$(echo "$RESPONSE" | jq -r '.token')
+          
+          if [ -z "$TOKEN" ] || [ "$TOKEN" == "null" ]; then
+            echo "Error: Unable to retrieve Docker Hub token. Response: $RESPONSE"
+            exit 1
+          fi
+          
+          echo "TOKEN=$TOKEN" >> $GITHUB_ENV
+
+      # Step 2: Debug the token
+      - name: Debug Docker Hub Token
+        run: echo "Docker Hub Token:${{ env.TOKEN }}"
+        
+      # Step 3: List all image tags
+      - name: List All Image Tags
+        id: list_tags
+        run: |
+          RESPONSE=$(curl -s -H "Authorization: JWT ${{ env.TOKEN }}" \
+            "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/?page_size=100")
+      
+          echo "Tags API Response: $RESPONSE"
+      
+          # Extract tag names and sort by last_updated
+          TAGS=$(echo "$RESPONSE" | jq -r '.results | sort_by(.last_updated) | .[].name')
+      
+          # Check if TAGS is empty
+          if [ -z "$TAGS" ]; then
+            echo "No tags found or error retrieving tags."
+            exit 1
+          fi
+      
+          # Write tags to a file
+          echo "$TAGS" | tr ' ' '\n' > tags.txt
+          echo "Processed Tags: $(cat tags.txt)"
+
+      # Step 4: Retain the latest 3 tags
+      - name: Determine Tags to Delete
+        id: tags_to_delete
+        run: |
+          # Count total tags
+          TOTAL_TAGS=$(wc -l < tags.txt)
+          echo "Total Tags: $TOTAL_TAGS"
+      
+          # Retain only the latest 3 tags
+          if [ "$TOTAL_TAGS" -le 3 ]; then
+            echo "No tags to delete. Only $TOTAL_TAGS tags exist."
+            exit 0
+          fi
+      
+          # Get tags to delete (all but the last 3)
+          TAGS_TO_DELETE=$(head -n -3 tags.txt | tr '\n' ' ')
+          echo "Tags to delete: $TAGS_TO_DELETE"
+          echo "TAGS_TO_DELETE=$TAGS_TO_DELETE" >> $GITHUB_ENV
+
+      # Step 5: Delete older tags
+      - name: Delete Old Tags
+        if: env.TAGS_TO_DELETE != ''
+        run: |
+          for TAG in ${{ env.TAGS_TO_DELETE }}; do
+            echo "Deleting tag: $TAG"
+            curl -s -X DELETE -H "Authorization: JWT ${{ env.TOKEN }}" \
+              "https://hub.docker.com/v2/repositories/billzhaohongwei/caa900debtsolverproject-auth-service/tags/$TAG/"
+          done
