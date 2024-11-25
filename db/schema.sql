@@ -25,15 +25,6 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- Create REFRESH_TOKEN table
--- CREATE TABLE IF NOT EXISTS refresh_tokens (
---     refresh_token_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
---     token VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
--- );
-
 -- Modified schema: Keeping only `id` as the primary key
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -64,18 +55,43 @@ CREATE TABLE IF NOT EXISTS budgets (
   deleted_at TIMESTAMP WITH TIME ZONE
 );
 
--- Create RECEIPT table
+-- -- Create RECEIPT table
+-- CREATE TABLE IF NOT EXISTS receipts (
+--   receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+--   image_url VARCHAR(255) NOT NULL,
+--   ocr_data TEXT,
+--   scanned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--   deleted_at TIMESTAMP WITH TIME ZONE,
+--   vendor_name VARCHAR(100),     -- Optional metadata
+--   total_amount DECIMAL(10, 2),  -- Optional metadata
+--   transaction_date DATE         -- Optional metadata for OCR extraction date
+-- );
+
+-- Updated RECEIPT table
 CREATE TABLE IF NOT EXISTS receipts (
   receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  image_url VARCHAR(255) NOT NULL,
-  ocr_data TEXT,
-  scanned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
+  image_url TEXT NOT NULL, -- Matches the model definition
+  status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')), -- Added `status` with valid states
+  total_amount DECIMAL(10, 2), -- Optional, aligns with model
+  merchant VARCHAR(100), -- Matches the `merchant` field in the model
+  scanned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Matches `ScannedDate` in the model
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
   deleted_at TIMESTAMP WITH TIME ZONE,
-  vendor_name VARCHAR(100),     -- Optional metadata
-  total_amount DECIMAL(10, 2),  -- Optional metadata
-  transaction_date DATE         -- Optional metadata for OCR extraction date
+);
+-- ITEM table
+CREATE TABLE IF NOT EXISTS items (
+  id SERIAL PRIMARY KEY, -- Matches the auto-incrementing ID field
+  receipt_id UUID NOT NULL REFERENCES receipts(receipt_id) ON DELETE CASCADE, -- Proper foreign key relation
+  name VARCHAR(255) NOT NULL, -- Matches `Name` field in the model
+  quantity INT DEFAULT 1 CHECK (quantity > 0), -- Matches `Quantity` with a sensible default
+  unit_price DECIMAL(10, 2) CHECK (unit_price >= 0), -- Matches `UnitPrice`
+  total_price DECIMAL(10, 2) GENERATED ALWAYS AS (quantity * unit_price) STORED, -- Auto-calculated field to match the model
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create EXPENSE table
