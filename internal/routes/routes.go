@@ -3,9 +3,16 @@ package routes
 import (
 	"github.com/Debt-Solvers/BE-auth-service/internal/controller"
 	"github.com/Debt-Solvers/BE-auth-service/internal/middleware"
+	"github.com/Debt-Solvers/BE-auth-service/internal/tests"
 
 	"github.com/gin-gonic/gin"
 )
+
+// Add the health check route to your main router
+func AddHealthCheckRoute(server *gin.Engine) {
+	server.GET("/health", tests.HealthCheck)
+}
+
 
 func RegisterRoutes(server *gin.Engine) {
 	// Public routes
