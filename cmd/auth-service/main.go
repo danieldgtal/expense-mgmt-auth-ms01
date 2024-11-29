@@ -30,6 +30,7 @@ func main() {
 
 	// Register routes
 	routes.RegisterRoutes(server) // Public routes
+	routes.AddHealthCheckRoute(server)
 
 	// Check for environment variable port
 	port := os.Getenv("PORT")

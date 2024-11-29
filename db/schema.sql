@@ -25,15 +25,6 @@ CREATE TABLE IF NOT EXISTS auth_tokens (
   expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
 
--- Create REFRESH_TOKEN table
--- CREATE TABLE IF NOT EXISTS refresh_tokens (
---     refresh_token_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     user_id UUID NOT NULL REFERENCES "users"(user_id) ON DELETE CASCADE,
---     token VARCHAR(255) NOT NULL,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
--- );
-
 -- Modified schema: Keeping only `id` as the primary key
 CREATE TABLE IF NOT EXISTS categories (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -64,18 +55,25 @@ CREATE TABLE IF NOT EXISTS budgets (
   deleted_at TIMESTAMP WITH TIME ZONE
 );
 
--- Create RECEIPT table
+
+-- Updated RECEIPT table with filehash
 CREATE TABLE IF NOT EXISTS receipts (
-  receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  image_url VARCHAR(255) NOT NULL,
-  ocr_data TEXT,
-  scanned_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  deleted_at TIMESTAMP WITH TIME ZONE,
-  vendor_name VARCHAR(100),     -- Optional metadata
-  total_amount DECIMAL(10, 2),  -- Optional metadata
-  transaction_date DATE         -- Optional metadata for OCR extraction date
+  receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), -- Matches `ReceiptID` in the struct
+  user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, -- Matches `UserID` in the struct
+  image BYTEA NOT NULL, -- Holds the actual image as binary data (BYTEA)
+  status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')), -- Matches `Status` in the struct with valid states
+  total_amount DECIMAL(10, 2), -- Matches `TotalAmount` in the struct
+  merchant VARCHAR(255), -- Matches `Merchant` in the struct
+  items JSONB, -- Matches `Items` in the struct
+  scanned_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Matches `ScannedDate` in the struct
+  transaction_date VARCHAR(50) NOT NULL, -- Matches `TransactionDate` in the struct
+  transaction_time VARCHAR(50) NOT NULL, -- Matches `TransactionTime` in the struct
+  tax DECIMAL(10, 2), -- Matches `Tax` in the struct
+  discounts DECIMAL(10, 2), -- Matches `Discounts` in the struct
+  file_hash VARCHAR(64) UNIQUE, -- Hash of the file content to detect duplicates (SHA-256 or similar)
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Matches `CreatedAt` in the struct
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Matches `UpdatedAt` in the struct
+  deleted_at TIMESTAMP WITH TIME ZONE -- Soft delete support, optional
 );
 
 -- Create EXPENSE table
