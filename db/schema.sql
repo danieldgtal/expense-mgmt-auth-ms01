@@ -60,9 +60,10 @@ CREATE TABLE IF NOT EXISTS budgets (
 CREATE TABLE IF NOT EXISTS receipts (
   receipt_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(), -- Matches `ReceiptID` in the struct
   user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE, -- Matches `UserID` in the struct
-  image BYTEA NOT NULL, -- Holds the actual image as binary data (BYTEA)
+  category_id UUID NOT NULL REFERENCES categories(id) ON DELETE CASCADE, -- New field for category_id, Matches `CategoryID` in the struct
+  image BYTEA NOT NULL, -- Holds the actual image as binary data (BYTEA)  
   status VARCHAR(50) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'failed')), -- Matches `Status` in the struct with valid states
-  total_amount DECIMAL(10, 2), -- Matches `TotalAmount` in the struct
+  total_amount DECIMAL(10, 2), -- Matches `TotalAmount` in the struct     
   merchant VARCHAR(255), -- Matches `Merchant` in the struct
   items JSONB, -- Matches `Items` in the struct
   scanned_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP, -- Matches `ScannedDate` in the struct
@@ -75,6 +76,7 @@ CREATE TABLE IF NOT EXISTS receipts (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP, -- Matches `UpdatedAt` in the struct
   deleted_at TIMESTAMP WITH TIME ZONE -- Soft delete support, optional
 );
+
 
 -- Create EXPENSE table
 CREATE TABLE IF NOT EXISTS expenses (
