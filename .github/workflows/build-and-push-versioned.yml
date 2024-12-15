@@ -33,9 +33,9 @@ jobs:
           echo "DATE_TAG=${DATE_TAG}" >> $GITHUB_ENV
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
 
-      - name: Build Docker Image
+      - name: Build Docker Image (No Cache)
         run: |
-          docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${DATE_TAG} .
+          docker build --no-cache -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${DATE_TAG} .
 
       - name: Push Docker Images
         run: |
