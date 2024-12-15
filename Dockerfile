@@ -14,7 +14,7 @@ RUN go mod tidy
 COPY . .
 
 # Build the Go app
-RUN go build -o auth-service ./cmd/auth-service/main.go
+RUN go build -o auth-ms ./cmd/auth-service/main.go
 
 # Stage 2: Create a minimal runtime environment
 FROM alpine:latest AS runtime
