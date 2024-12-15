@@ -29,13 +29,17 @@ jobs:
         run: |
           export TZ=America/Toronto
           DATE_TAG=$(date +'%Y%m%d-%H%M')
-          IMAGE_NAME="billzhaohongwei/caa900debtsolverproject-auth-service"
+          IMAGE_NAME="expense-mgmt-auth-ms01"
           echo "DATE_TAG=${DATE_TAG}" >> $GITHUB_ENV
           echo "IMAGE_NAME=${IMAGE_NAME}" >> $GITHUB_ENV
 
-      - name: Build Docker Image
+      - name: Debug - List files in build context
         run: |
-          docker build -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${DATE_TAG} .
+          ls -la /app/
+
+      - name: Build Docker Image (No Cache)
+        run: |
+          docker build --no-cache -t ${IMAGE_NAME}:latest -t ${IMAGE_NAME}:${DATE_TAG} .
 
       - name: Push Docker Images
         run: |
